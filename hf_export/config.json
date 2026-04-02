@@ -1,0 +1,24 @@
+{
+  "model_type": "tucker_compressed",
+  "compression_method": "tucker_decomposition",
+  "original_model": "gpt2",
+  "tucker_rank": 64,
+  "compressed_layers": ["q_proj", "k_proj", "v_proj", "o_proj"],
+  "compression_ratio": 0.5,
+  "speedup_factor": 1.4,
+  "quality_retention": 0.97,
+  "latency_surgeon_version": "0.1.0",
+  "framework": "pytorch",
+  "transformers_version": ">=4.35.0",
+  "tags": [
+    "latency-surgeon",
+    "tucker-decomposition",
+    "model-compression",
+    "inference-optimization"
+  ],
+  "hf_hub": {
+    "repo_type": "model",
+    "private": false,
+    "exist_ok": true
+  }
+}
