@@ -9,6 +9,7 @@
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue?style=flat-square)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![HuggingFace](https://img.shields.io/badge/🤗%20HuggingFace-daksh--neo%2Flatency--surgeon-yellow?style=flat-square)](https://huggingface.co/daksh-neo/latency-surgeon)
+[![GitHub](https://img.shields.io/badge/GitHub-dakshjain--1616%2Flatency--surgeon-181717?style=flat-square&logo=github)](https://github.com/dakshjain-1616/latency-surgeon)
 
 LatencySurgeon performs **Tucker decomposition** on transformer attention layers — replacing large weight matrices with efficient low-rank factorizations to achieve **up to 40% inference speedup** with minimal quality loss. Works on CPU, no special kernels needed.
 
@@ -367,6 +368,17 @@ tests/
 | BERT / RoBERTa / DistilBERT | `query`, `key`, `value`, `dense` | ✅ |
 | T5 / Flan-T5 | `q`, `k`, `v`, `o` | ✅ |
 | Generic transformers | Pattern match by layer name | ✅ |
+
+---
+
+## 🔗 Links
+
+| | |
+|:--|:--|
+| **GitHub** | https://github.com/dakshjain-1616/latency-surgeon |
+| **HuggingFace** | https://huggingface.co/daksh-neo/latency-surgeon |
+| **PyPI** | `pip install latency-surgeon` |
+| **NEO** | https://heyneo.com |
 
 ---
 
