@@ -68,4 +68,4 @@
 
   ─────────────────────────────────────────────────────────────────────────────
   🏥 LatencySurgeon v0.1.0 | pip install latency-surgeon
-  Built with NEO — Anthropic's Autonomous Agent
+  Built with NEO — Your Autonomous AI Agent

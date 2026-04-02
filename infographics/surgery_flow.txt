@@ -71,4 +71,4 @@
 
   ─────────────────────────────────────────────────────────────────────────────
   🏥 LatencySurgeon | Tucker Decomposition for Faster Transformers
-  Built with NEO — Anthropic's Autonomous Agent
+  Built with NEO — Your Autonomous AI Agent
