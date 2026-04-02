@@ -276,5 +276,5 @@ MIT
 ---
 
 <div align="center">
-🏥 Built with <a href="https://heyneo.com">NEO</a> — Autonomous AI Agent by Anthropic
+🏥 Built with <a href="https://heyneo.com">NEO</a> — Autonomous AI Agent
 </div>
