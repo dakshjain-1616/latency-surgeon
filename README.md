@@ -14,6 +14,72 @@ LatencySurgeon performs **Tucker decomposition** on transformer attention layers
 
 ---
 
+## 🩺 The Problem
+
+Every transformer model — GPT, LLaMA, BERT, Mistral — is dominated by **attention layers**. Each attention layer contains four large weight matrices (Q, K, V, O projections). For GPT-2 medium, that's 24 layers × 4 matrices = **96 large Linear operations** executed on every single forward pass.
+
+These matrices are **massively over-parameterized for most inputs.** A `[768×768]` weight matrix has 589,824 parameters, but research consistently shows its effective rank — the number of dimensions that actually carry meaningful signal — is often below 64. The other 500,000+ parameters are redundancy baked in during training.
+
+**The real-world consequence:**
+
+- You're running a 7B model locally and it's too slow to use interactively
+- You're paying for GPU inference and want to cut compute costs without retraining
+- You're deploying on CPU (edge, laptop, CI) where quantization gives no FLOP savings
+- You want to fine-tune a compressed model — quantization makes that impossible
+
+Traditional solutions only go so far:
+
+| Approach | What it does | CPU speedup? | Fine-tune after? | No calibration data? |
+|:---------|:-------------|:------------:|:----------------:|:--------------------:|
+| GPTQ / AWQ | Reduce weight precision to int4 | ✗ (needs kernels) | ✗ | ✗ |
+| BitsAndBytes | int8 weights | ✓ partial | ✗ | ✓ |
+| Pruning | Zero out weights | ✓ (sparse) | ✓ | ✗ |
+| **LatencySurgeon** | **Reduce matrix rank** | **✓✓** | **✓** | **✓** |
+
+Quantization keeps the matrix the same size — it just uses fewer bits per number. **The matrix-vector multiply still touches every element.** LatencySurgeon actually shrinks the matrix.
+
+---
+
+## 💡 The Solution — Tucker Decomposition
+
+LatencySurgeon identifies the real information content of each attention weight matrix using **Singular Value Decomposition (SVD)**, then replaces the original matrix with two smaller ones that approximate it:
+
+```
+Original:   x  →  Linear(768, 768)  →  y
+                    W  [768×768]
+                  589,824 multiplications
+
+After surgery:  x  →  Linear(768, 64)  →  Linear(64, 768)  →  y
+                         A [768×64]            B [64×768]
+                       49,152 mults          49,152 mults
+                              = 98,304 total  (↓ 83% fewer ops)
+```
+
+**Why this actually works:**
+
+The SVD of W produces singular values σ₁ ≥ σ₂ ≥ ... ≥ σ₇₆₈. In trained attention layers, the top 32–64 singular values capture 95%+ of the weight matrix's "energy". Everything below rank ~64 is near-zero signal. LatencySurgeon keeps only the top-r singular values/vectors and throws the rest away — with a controlled, measurable quality tradeoff.
+
+**Why it's different from other compression:**
+
+- **Not quantization** — the weights stay in float32, just in smaller matrices. This means you can fine-tune the compressed model normally.
+- **Not pruning** — there's no sparse structure to manage. The result is two dense Linear layers — every framework runs them efficiently without special kernels.
+- **CPU-native speedup** — fewer FLOPs = faster on any hardware. No CUDA-specific int4 dequant kernels needed.
+- **Composable** — stack Tucker + int8 quantization for up to 1.65× combined speedup.
+- **Reversible** — you have the original model. If quality drops too much, tune up the rank.
+
+**The rank controls the quality/speed tradeoff:**
+
+```
+rank=16  →  85% faster,  6.5% quality drop   (aggressive)
+rank=32  →  62% faster,  3.0% quality drop
+rank=64  →  40% faster,  1.2% quality drop   ★ recommended
+rank=128 →  20% faster,  0.5% quality drop   (conservative)
+```
+
+LatencySurgeon's `auto_tune_rank` command binary-searches this space automatically, finding the smallest rank that keeps your quality loss within a threshold you define.
+
+---
+
 ## 📊 Speedup vs Other Methods
 
 <img src="infographics/speedup_chart.svg" alt="Speedup comparison chart" width="100%"/>
